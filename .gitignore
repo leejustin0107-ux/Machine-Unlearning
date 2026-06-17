@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+.env
+venv/
+.venv/
+
+# Dataset/cache folders
+data/raw/
+data/processed/
+
+# Model checkpoints can become large. Keep .gitkeep but avoid pushing large files.
+saved_models/*.pth
+saved_models/*.pt
+!saved_models/.gitkeep
+
+# Generated results
+results/*.csv
+results/*.json
+results/graphs/*.png
+!results/.gitkeep
+!results/graphs/.gitkeep
+
+.DS_Store
+Thumbs.db
