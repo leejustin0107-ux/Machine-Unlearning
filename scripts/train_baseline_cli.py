@@ -5,7 +5,7 @@ from src.training.train_baseline import train_model
 from src.evaluation.metrics import evaluate_model
 from src.utils.save_load import save_model
 from src.utils.seed import set_seed
-
+import json
 
 def main():
     set_seed(SEED)
@@ -16,7 +16,14 @@ def main():
     model, runtime = train_model(model, train_loader, DEVICE, epochs=EPOCHS, lr=LEARNING_RATE)
     metrics = evaluate_model(model, test_loader, DEVICE)
     save_model(model, SAVED_MODELS_DIR / "baseline_model.pth")
-    print({"runtime": runtime, **metrics})
+    results = {"runtime": runtime, **metrics}
+    print(results)
+
+    # SAVE RESULTS
+    results_path = SAVED_MODELS_DIR.parent / "results" / "baseline_results.json"
+
+    with open(results_path, "w") as f:
+        json.dump(results, f, indent=4)
 
 
 if __name__ == "__main__":
