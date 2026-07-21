@@ -10,12 +10,12 @@ venv/
 data/*
 !data/.gitkeep
 
-# Model checkpoints can become large. Keep .gitkeep but avoid pushing large files.
+
 saved_models/*.pth
 saved_models/*.pt
 !saved_models/.gitkeep
 
-# Generated results
+
 results/*.csv
 results/*.json
 results/graphs/*.png

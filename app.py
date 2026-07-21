@@ -410,9 +410,58 @@ history = load_experiment_history(history_path)
 if history.empty:
     st.info("No experiments recorded yet.")
 else:
+    # Add delete controls
+    st.markdown("#### Manage History")
+
+    history_with_id = history.reset_index().rename(columns={"index": "run_id"})
+
+    history_with_id["delete_label"] = history_with_id.apply(
+        lambda row: (
+            f"Run {row['run_id']} | {row['method']} | "
+            f"digit {row['forget_digit']} | size {row['forget_size']} | "
+            f"epochs {row['epochs']}"
+        ),
+        axis=1,
+    )
+
+    selected_runs = st.multiselect(
+        "Select experiment rows to delete",
+        history_with_id["delete_label"].tolist(),
+    )
+
+    col_delete, col_clear = st.columns(2)
+
+    with col_delete:
+        if st.button("Delete Selected Rows"):
+            if selected_runs:
+                selected_ids = history_with_id[
+                    history_with_id["delete_label"].isin(selected_runs)
+                ]["run_id"].tolist()
+
+                updated_history = history.drop(index=selected_ids)
+                updated_history.to_csv(history_path, index=False)
+
+                st.success("Selected experiment rows deleted.")
+                st.rerun()
+            else:
+                st.warning("Please select at least one row to delete.")
+
+    with col_clear:
+        if st.button("Clear All History"):
+            history_path.unlink(missing_ok=True)
+            st.success("All experiment history cleared.")
+            st.rerun()
+
+    # Display formatted history table
     display_history = history.copy()
 
-    for col in ["test_accuracy", "retain_accuracy", "forget_accuracy", "forget_confidence"]:
+    for col in [
+        "test_accuracy",
+        "retain_accuracy",
+        "forget_accuracy",
+        "forget_confidence",
+        "forget_true_label_confidence",
+    ]:
         if col in display_history.columns:
             display_history[col] = display_history[col].apply(format_percent)
 
