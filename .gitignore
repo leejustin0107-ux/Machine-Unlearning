@@ -7,8 +7,8 @@ venv/
 .venv/
 
 # Dataset/cache folders
-data/raw/
-data/processed/
+data/*
+!data/.gitkeep
 
 # Model checkpoints can become large. Keep .gitkeep but avoid pushing large files.
 saved_models/*.pth

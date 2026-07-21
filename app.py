@@ -23,6 +23,12 @@ st.caption("Local dashboard prototype for selective forgetting using machine unl
 
 set_seed(SEED)
 
+def format_percent(value):
+    return f"{value * 100:.2f}%"
+
+def format_seconds(value):
+    return f"{value:.2f}s"
+
 with st.sidebar:
     st.header("Experiment Controls")
     forget_digit = st.selectbox("Forget target digit", list(range(10)), index=7)
@@ -59,13 +65,13 @@ if col_a.button("Train Baseline CNN"):
         model, runtime = train_model(model, train_loader, DEVICE, epochs=epochs, lr=learning_rate)
         save_model(model, baseline_path)
         metrics = evaluate_model(model, test_loader, DEVICE)
-        st.success(f"Baseline trained. Accuracy: {metrics['accuracy']:.4f}, Runtime: {runtime:.2f}s")
+        st.success(f"Baseline trained. Accuracy: {format_percent(metrics['accuracy'])}, Runtime: {format_seconds(runtime)}")
 
 if col_b.button("Check Baseline Model"):
     if baseline_path.exists():
         model = load_model(SimpleCNN(), baseline_path, DEVICE)
         metrics = evaluate_model(model, test_loader, DEVICE)
-        st.success(f"Baseline exists. Test accuracy: {metrics['accuracy']:.4f}")
+        st.success(f"Baseline exists. Test accuracy: {format_percent(metrics['accuracy'])}")
     else:
         st.warning("No baseline model found yet. Train it first.")
 
@@ -118,8 +124,23 @@ if st.button("Run Selected Method"):
 st.subheader("3. Experiment History")
 if history_path.exists():
     history = pd.read_csv(history_path)
-    st.dataframe(history, use_container_width=True)
-    st.bar_chart(history.set_index("method")[["test_accuracy", "retain_accuracy", "forget_accuracy"]])
+    display_history = history.copy()
+
+    for col in ["test_accuracy", "retain_accuracy", "forget_accuracy", "forget_confidence"]:
+        if col in display_history.columns:
+            display_history[col] = display_history[col].apply(format_percent)
+
+    for col in ["runtime_seconds", "total_wall_time"]:
+        if col in display_history.columns:
+            display_history[col] = display_history[col].apply(format_seconds)
+
+    st.dataframe(display_history, use_container_width=True)
+
+    chart_data = history.copy()
+    chart_data[["test_accuracy", "retain_accuracy", "forget_accuracy"]] = (
+        chart_data[["test_accuracy", "retain_accuracy", "forget_accuracy"]] * 100
+    )
+    st.bar_chart(chart_data.set_index("method")[["test_accuracy", "retain_accuracy", "forget_accuracy"]])
 else:
     st.info("No experiments recorded yet.")
 
